@@ -1,7 +1,7 @@
 package main
 
 import (
-	"demo/blockchain"
+	"github.com/Alexygui/bc_demo/blockchain"
 	"github.com/davecgh/go-spew/spew"
 )
 
