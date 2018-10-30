@@ -1,8 +1,13 @@
 package blockchain
 
-import "math/big"
+import (
+	"bytes"
+	"fmt"
+	"github.com/minio/sha256-simd"
+	"math/big"
+)
 
-const targetBit = 16
+const targetBit = 8
 
 type ProofofWork struct {
 	Block  *Block
@@ -15,6 +20,39 @@ func NewProofofWork(b *Block) *ProofofWork {
 	return &ProofofWork{b, target}
 }
 
-func (p *ProofofWork) Run() ([]byte, int64) {
-	return nil, 0
+func (pow *ProofofWork) Run() ([]byte, int64) {
+	nounce := 0
+	var hashInt big.Int
+	var hash [32]byte
+
+	for {
+		dataBytes := pow.prepareData(nounce)
+
+		hash = sha256.Sum256(dataBytes)
+		fmt.Printf("mining: %x\n", hash)
+		hashInt.SetBytes(hash[:])
+
+		if pow.target.Cmp(&hashInt) == 1 {
+			break
+		}
+
+		nounce++
+		//time.Sleep(100 * time.Millisecond)
+	}
+
+	return hash[:], int64(nounce)
+}
+
+func (pow *ProofofWork) prepareData(nounce int) []byte {
+	data := bytes.Join(
+		[][]byte{
+			IntToHex(pow.Block.Height),
+			pow.Block.PrevBlockHash,
+			IntToHex(pow.Block.Timestamp),
+			pow.Block.Data,
+			IntToHex(targetBit),
+			IntToHex(int64(nounce)),
+		},
+		[]byte{})
+	return data
 }
