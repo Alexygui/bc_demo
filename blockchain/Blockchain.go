@@ -153,6 +153,7 @@ func (bc *Blockchain) AddBlockToBlockchain(data string) {
 
 func (bc *Blockchain) PrintBlockchain() {
 	var block *Block
+	
 	var blockchainIterator = bc.Iterator()
 
 	for ; blockchainIterator.HasNext(); {
