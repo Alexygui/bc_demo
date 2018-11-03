@@ -36,7 +36,7 @@ func NewBlock(data string, height int64, prevBlockhash []byte) *Block {
 //	blockBytes := bytes.Join([][]byte{heightByts, b.PrevBlockHash, timeBytes, b.Data}, []byte{})
 //
 //	hash := sha256.Sum256(blockBytes)
-//	b.Hash = hash[:]
+//	b.Tip = hash[:]
 //}
 
 func (block *Block) Serialize() []byte {
