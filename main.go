@@ -1,13 +1,15 @@
 package main
 
-import "github.com/Alexygui/bc_demo/blockchain"
-
 func main() {
-	bc := blockchain.CreateGenesisBlockBoltDB()
-	defer bc.DB.Close()
-	//blockchain.ReadGenesisBlock()
 
-	bc.AddBlockToBlockchain("send 100 RMB to Alice")
+
+
+
+	//bc := blockchain.CreateGenesisBlockBoltDB()
+	//defer bc.DB.Close()
+	////blockchain.ReadGenesisBlock()
+	//
+	//bc.AddBlockToBlockchain("send 100 RMB to Alice")
 }
 
 //func seriable_deseriable(){
