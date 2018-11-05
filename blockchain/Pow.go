@@ -29,7 +29,7 @@ func (pow *ProofofWork) Run() ([]byte, int64) {
 		dataBytes := pow.prepareData(nounce)
 
 		hash = sha256.Sum256(dataBytes)
-		fmt.Printf("mining: %x\n", hash)
+		fmt.Printf("\r%x", hash)
 		hashInt.SetBytes(hash[:])
 
 		if pow.target.Cmp(&hashInt) == 1 {
