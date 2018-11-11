@@ -3,10 +3,7 @@ package main
 import "github.com/Alexygui/bc_demo/blockchain"
 
 func main() {
-	bc := blockchain.CreateGenesisBlockOfBlockchain()
-	defer bc.DB.Close()
-
-	cli := blockchain.CLI{bc}
+	cli := blockchain.CLI{}
 	cli.RUN()
 }
 

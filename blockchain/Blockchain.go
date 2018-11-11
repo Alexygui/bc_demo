@@ -17,7 +17,7 @@ type Blockchain struct {
 const dbName = "blockchain.db"
 const blockTableName = "blocks"
 
-func CreateGenesisBlockOfBlockchain() *Blockchain {
+func CreateGenesisBlockOfBlockchain(data string) *Blockchain {
 	if isDBExists() {
 		fmt.Println("创始区块已经产生")
 
@@ -61,7 +61,7 @@ func CreateGenesisBlockOfBlockchain() *Blockchain {
 			}
 		}
 
-		genesisBlock := NewBlock("creating genesis block/生成创始区块...", 0, []byte{0})
+		genesisBlock := CreateGenesisBlock(data)
 		err := bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
 		if err != nil {
 			log.Panic(err)
@@ -153,4 +153,9 @@ func (bc *Blockchain) PrintBlockchain() {
 		block = blockchainIterator.Next()
 		spew.Dump(block)
 	}
+}
+
+//产生创始区块
+func CreateGenesisBlock(data string) *Block {
+	return NewBlock(data, 0, []byte{0})
 }
