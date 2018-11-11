@@ -5,7 +5,7 @@ import "github.com/Alexygui/bc_demo/blockchain"
 func main() {
 	bc := blockchain.CreateGenesisBlockBoltDB()
 	defer bc.DB.Close()
-	//blockchain.ReadGenesisBlock()
+	////blockchain.ReadGenesisBlock()
 
 	bc.AddBlockToBlockchain("send 100RMB to Alice")
 	bc.AddBlockToBlockchain("send 200RMB to Bob")
