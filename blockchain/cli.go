@@ -79,9 +79,7 @@ func (cli *CLI) printChain() {
 
 //产生创始区块并持久化
 func (cli *CLI) createGenesisBlockOfBlockchain(data string) {
-	fmt.Println(data)
-
-	//bc := CreateGenesisBlockOfBlockchain(data)
+	CreateGenesisBlockOfBlockchain(data)
 	//cli.BC = bc
 }
 

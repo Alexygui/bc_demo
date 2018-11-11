@@ -17,39 +17,18 @@ type Blockchain struct {
 const dbName = "blockchain.db"
 const blockTableName = "blocks"
 
-func CreateGenesisBlockOfBlockchain(data string) *Blockchain {
+func CreateGenesisBlockOfBlockchain(data string) {
 	if isDBExists() {
 		fmt.Println("创始区块已经产生")
-
-		db, e := bolt.Open(dbName, 0600, nil)
-		if e != nil {
-			log.Panic(e)
-		}
-
-		var blockchain *Blockchain
-
-		err := db.View(func(tx *bolt.Tx) error {
-			bucket := tx.Bucket([]byte(blockTableName))
-			if bucket != nil {
-				tip := bucket.Get([]byte("tip"))
-				blockchain = &Blockchain{tip, db}
-			}
-			return nil
-		})
-		if err != nil {
-			log.Panic(err)
-		}
-
-		return blockchain
+		os.Exit(1)
 	}
 
+	fmt.Println("正在创建创始区块")
 	// 打开或创建数据库
 	db, e := bolt.Open(dbName, 0600, nil)
 	if e != nil {
 		log.Panic(e)
 	}
-
-	var blockHash []byte
 
 	err := db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blockTableName))
@@ -72,15 +51,12 @@ func CreateGenesisBlockOfBlockchain(data string) *Blockchain {
 			log.Panic(err)
 		}
 
-		blockHash = genesisBlock.Hash
-
 		return nil
 	})
 	if err != nil {
 		log.Panic(err)
 	}
 
-	return &Blockchain{blockHash, db}
 }
 
 func isDBExists() bool {
