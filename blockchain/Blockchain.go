@@ -4,6 +4,8 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/davecgh/go-spew/spew"
 	"log"
+	"os"
+	"fmt"
 )
 
 type Blockchain struct {
@@ -15,17 +17,33 @@ type Blockchain struct {
 const dbName = "blockchain.db"
 const blockTableName = "blocks"
 
-//func CreateGenesisBlockchain() *Blockchain {
-//	genesisBlock := NewBlock("creating genesis block/生成创始区块...", 0, []byte{0})
-//	return &Blockchain{[]*Block{genesisBlock}}
-//}
-//
-//func (bc *Blockchain) AddBlockToChain(data string, height int64, prevBlockhash []byte) {
-//	newBlock := NewBlock(data, height, prevBlockhash)
-//	bc.Blocks = append(bc.Blocks, newBlock)
-//}
+func CreateGenesisBlockOfBlockchain() *Blockchain {
+	if isDBExists() {
+		fmt.Println("创始区块已经产生")
 
-func CreateGenesisBlockBoltDB() *Blockchain {
+		db, e := bolt.Open(dbName, 0600, nil)
+		if e != nil {
+			log.Panic(e)
+		}
+
+		var blockchain *Blockchain
+
+		err := db.View(func(tx *bolt.Tx) error {
+			bucket := tx.Bucket([]byte(blockTableName))
+			if bucket != nil {
+				tip := bucket.Get([]byte("tip"))
+				blockchain = &Blockchain{tip, db}
+			}
+			return nil
+		})
+		if err != nil {
+			log.Panic(err)
+		}
+
+		return blockchain
+	}
+
+	// 打开或创建数据库
 	db, e := bolt.Open(dbName, 0600, nil)
 	if e != nil {
 		log.Panic(e)
@@ -34,25 +52,27 @@ func CreateGenesisBlockBoltDB() *Blockchain {
 	var blockHash []byte
 
 	err := db.Update(func(tx *bolt.Tx) error {
-		bucket, e := tx.CreateBucket([]byte(blockTableName))
-		if e != nil {
-			log.Panic(e)
+		bucket := tx.Bucket([]byte(blockTableName))
+
+		if nil == bucket {
+			bucket, e = tx.CreateBucket([]byte(blockTableName))
+			if e != nil {
+				log.Panic(e)
+			}
 		}
 
-		if bucket != nil {
-			genesisBlock := NewBlock("creating genesis block/生成创始区块...", 0, []byte{0})
-			err := bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
-			if err != nil {
-				log.Panic(err)
-			}
-
-			err = bucket.Put([]byte("tip"), genesisBlock.Hash)
-			if err != nil {
-				log.Panic(err)
-			}
-
-			blockHash = genesisBlock.Hash
+		genesisBlock := NewBlock("creating genesis block/生成创始区块...", 0, []byte{0})
+		err := bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
+		if err != nil {
+			log.Panic(err)
 		}
+
+		err = bucket.Put([]byte("tip"), genesisBlock.Hash)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		blockHash = genesisBlock.Hash
 
 		return nil
 	})
@@ -61,6 +81,13 @@ func CreateGenesisBlockBoltDB() *Blockchain {
 	}
 
 	return &Blockchain{blockHash, db}
+}
+
+func isDBExists() bool {
+	if _, e := os.Stat(dbName); e != nil {
+		return false
+	}
+	return true
 }
 
 func ReadGenesisBlock() {
@@ -73,10 +100,10 @@ func ReadGenesisBlock() {
 	err := db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blockTableName))
 		if bucket != nil {
-			b0 := bucket.Get([]byte("tip"))
-			if b0 != nil {
-				spew.Dump("b0Hash: ", b0)
-				blockData := bucket.Get(b0)
+			tip := bucket.Get([]byte("tip"))
+			if tip != nil {
+				spew.Dump("b0Hash: ", tip)
+				blockData := bucket.Get(tip)
 				spew.Dump("blockData: ", blockData)
 
 				block := DeserializeBlock(blockData)

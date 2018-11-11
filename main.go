@@ -3,15 +3,11 @@ package main
 import "github.com/Alexygui/bc_demo/blockchain"
 
 func main() {
-	bc := blockchain.CreateGenesisBlockBoltDB()
+	bc := blockchain.CreateGenesisBlockOfBlockchain()
 	defer bc.DB.Close()
-	////blockchain.ReadGenesisBlock()
 
-	bc.AddBlockToBlockchain("send 100RMB to Alice")
-	bc.AddBlockToBlockchain("send 200RMB to Bob")
-	bc.AddBlockToBlockchain("send 300RMB to Kat")
-
-	bc.PrintBlockchain()
+	cli := blockchain.CLI{bc}
+	cli.RUN()
 }
 
 //func seriable_deseriable(){
