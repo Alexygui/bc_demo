@@ -135,3 +135,32 @@ func (bc *Blockchain) PrintBlockchain() {
 func CreateGenesisBlock(data string) *Block {
 	return NewBlock(data, 0, []byte{0})
 }
+
+//获取保存区块数据的数据库
+func GetBlockchain() *Blockchain {
+	if !isDBExists() {
+		fmt.Println("数据不存在")
+		os.Exit(1)
+	}
+	db, e := bolt.Open(dbName, 0600, nil)
+	if e != nil {
+		log.Panic(e)
+	}
+
+	var tip []byte
+	err := db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blockTableName))
+		if bucket == nil {
+			fmt.Println("尚未生成创始区块")
+		}
+
+		tip = bucket.Get([]byte("tip"))
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &Blockchain{tip, db}
+}
