@@ -5,19 +5,23 @@ import (
 	"encoding/gob"
 	"log"
 	"time"
+	"crypto/sha256"
 )
 
 type Block struct {
-	Height        int64
+	//区块高度
+	Height int64
+	//前一个区块的hash
 	PrevBlockHash []byte
 	Timestamp     int64
-	Data          []byte
-	Hash          []byte
-	Nounce        int64
+	//交易数据
+	Txs    []*Transaction
+	Hash   []byte
+	Nounce int64
 }
 
-func NewBlock(data string, height int64, prevBlockhash []byte) *Block {
-	newBlock := &Block{height, prevBlockhash, time.Now().Unix(), []byte(data), nil, 0}
+func NewBlock(txs []*Transaction, height int64, prevBlockhash []byte) *Block {
+	newBlock := &Block{height, prevBlockhash, time.Now().Unix(), txs, nil, 0}
 	pow := NewProofofWork(newBlock)
 
 	hash, nounce := pow.Run()
@@ -39,6 +43,7 @@ func NewBlock(data string, height int64, prevBlockhash []byte) *Block {
 //	b.Tip = hash[:]
 //}
 
+//序列化block
 func (block *Block) Serialize() []byte {
 	var result bytes.Buffer
 
@@ -51,6 +56,7 @@ func (block *Block) Serialize() []byte {
 	return result.Bytes()
 }
 
+//反序列化Block
 func DeserializeBlock(b []byte) *Block {
 	var block Block
 	decoder := gob.NewDecoder(bytes.NewReader(b))
@@ -59,4 +65,16 @@ func DeserializeBlock(b []byte) *Block {
 		log.Panic(e)
 	}
 	return &block
+}
+
+func (block *Block) HashTransactions() []byte {
+	var txHashes [][]byte
+	var txHash [32]byte
+
+	for _, tx := range block.Txs {
+		txHashes = append(txHashes, tx.TxHash)
+	}
+	txHash = sha256.Sum256(bytes.Join(txHashes, []byte{}))
+
+	return txHash[:]
 }

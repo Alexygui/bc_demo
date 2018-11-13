@@ -50,7 +50,7 @@ func (cli *CLI) RUN() {
 			os.Exit(1)
 		}
 		//fmt.Println(*flagAddBlockData)
-		cli.addBlock(*flagAddBlockData)
+		cli.addBlock([]*Transaction{})
 	}
 
 	if printCahinCmd.Parsed() {
@@ -64,15 +64,15 @@ func (cli *CLI) RUN() {
 			printUsage()
 			os.Exit(1)
 		}
-		cli.createGenesisBlockOfBlockchain(*createBlockchainData)
+		cli.createGenesisBlockOfBlockchain([]*Transaction{})
 	}
 }
 
-func (cli *CLI) addBlock(data string) {
+func (cli *CLI) addBlock(txs []*Transaction) {
 	bc := GetBlockchain()
 	defer bc.DB.Close()
 
-	bc.AddBlockToBlockchain(data)
+	bc.AddBlockToBlockchain(txs)
 }
 
 //打印区块链中的所有区块
@@ -84,8 +84,8 @@ func (cli *CLI) printChain() {
 }
 
 //产生创始区块并持久化
-func (cli *CLI) createGenesisBlockOfBlockchain(data string) {
-	CreateGenesisBlockOfBlockchain(data)
+func (cli *CLI) createGenesisBlockOfBlockchain(txs []*Transaction) {
+	CreateGenesisBlockOfBlockchain(txs)
 }
 
 //命令行传入的参数少于2个则打印命令行帮助

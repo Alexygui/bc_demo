@@ -17,7 +17,7 @@ type Blockchain struct {
 const dbName = "blockchain.db"
 const blockTableName = "blocks"
 
-func CreateGenesisBlockOfBlockchain(data string) {
+func CreateGenesisBlockOfBlockchain(txs []*Transaction) {
 	if isDBExists() {
 		fmt.Println("创始区块已经产生")
 		os.Exit(1)
@@ -40,7 +40,7 @@ func CreateGenesisBlockOfBlockchain(data string) {
 			}
 		}
 
-		genesisBlock := CreateGenesisBlock(data)
+		genesisBlock := CreateGenesisBlock(txs)
 		err := bucket.Put(genesisBlock.Hash, genesisBlock.Serialize())
 		if err != nil {
 			log.Panic(err)
@@ -94,14 +94,14 @@ func ReadGenesisBlock() {
 	}
 }
 
-func (bc *Blockchain) AddBlockToBlockchain(data string) {
+func (bc *Blockchain) AddBlockToBlockchain(txs []*Transaction) {
 	err := bc.DB.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blockTableName))
 		if b != nil {
 			blockData := b.Get(bc.Tip)
 			preBlock := DeserializeBlock(blockData)
 
-			newBlock := NewBlock(data, preBlock.Height+1, preBlock.Hash)
+			newBlock := NewBlock(txs, preBlock.Height+1, preBlock.Hash)
 			e := b.Put(newBlock.Hash, newBlock.Serialize())
 			if e != nil {
 				log.Panic(e)
@@ -132,8 +132,8 @@ func (bc *Blockchain) PrintBlockchain() {
 }
 
 //产生创始区块
-func CreateGenesisBlock(data string) *Block {
-	return NewBlock(data, 0, []byte{0})
+func CreateGenesisBlock(txs []*Transaction) *Block {
+	return NewBlock(txs, 0, []byte{0})
 }
 
 //获取保存区块数据的数据库
