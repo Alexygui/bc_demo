@@ -1,11 +1,11 @@
 package blockchain
 
 import (
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/davecgh/go-spew/spew"
 	"log"
 	"os"
-	"fmt"
 )
 
 type Blockchain struct {
@@ -169,4 +169,63 @@ func GetBlockchain() *Blockchain {
 
 func (bc *Blockchain) Iterator() *Iterator {
 	return &Iterator{bc.Tip, bc.DB}
+}
+
+//从数据库中获取Blockchain对象
+func BlockchainObject() *Blockchain {
+	db, e := bolt.Open(dbName, 0600, nil)
+	if e != nil {
+		log.Panic(e)
+	}
+
+	var tip []byte
+	err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(blockTableName))
+		if b != nil {
+			tip = b.Get([]byte("tip"))
+		}
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &Blockchain{tip, db}
+}
+
+//发送交易并打包区块
+func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) {
+	//获取已经存在的最新区块
+	var oldBlock *Block
+	err := bc.DB.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blockTableName))
+		if bucket != nil {
+			hash := bucket.Get([]byte(bc.Tip))
+			oldBlockBytes := bucket.Get(hash)
+			fmt.Println(hash)
+			fmt.Println([]byte(hash))
+			oldBlock = DeserializeBlock(oldBlockBytes)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	var txs []*Transaction
+	newBlock := NewBlock(txs, oldBlock.Height+1, oldBlock.Hash)
+	//将新区块存储到数据库并更新bc中的tip值
+	err = bc.DB.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(blockTableName))
+		if bucket != nil {
+			bucket.Put(newBlock.Hash, newBlock.Serialize())
+			bucket.Put([]byte("tip"), newBlock.Hash)
+			bc.Tip = newBlock.Hash
+		}
+		return nil
+	})
+	if err != nil {
+		log.Panic(nil)
+	}
 }

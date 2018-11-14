@@ -24,7 +24,7 @@ Usage:
 func (cli *CLI) RUN() {
 	isValidArgs()
 
-	// sendTransaction -from '["Alice","Alex"]' -to '["Bob","Bag"]' -amount '["10","20"]'
+	// e.g.:  sendTransaction -from '["Alice","Alex"]' -to '["Bob","Bag"]' -amount '["10","20"]'
 	sendTransactionCmd := flag.NewFlagSet("sendTransaction", flag.ExitOnError)
 	printCahinCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createBlockchainCmd := flag.NewFlagSet("createBlockchain", flag.ExitOnError)
@@ -63,10 +63,13 @@ func (cli *CLI) RUN() {
 			printUsage()
 			os.Exit(1)
 		}
-		//fmt.Println(*flagAddBlockData)
-		fmt.Println(*flagFrom, *flagTo, *flagAmount)
-		fmt.Println(JSONtoArray(*flagFrom),JSONtoArray(*flagTo),JSONtoArray(*flagAmount))
-		//cli.addBlock([]*Transaction{})
+		//fmt.Println(*flagFrom, *flagTo, *flagAmount)
+		//fmt.Println(JSONtoArray(*flagFrom),JSONtoArray(*flagTo),JSONtoArray(*flagAmount))
+
+		fromArr := JSONtoArray(*flagFrom)
+		toArr := JSONtoArray(*flagTo)
+		amountArr := JSONtoArray(*flagAmount)
+		cli.sendTransaction(fromArr,toArr,amountArr)
 	}
 
 	if printCahinCmd.Parsed() {
@@ -110,4 +113,16 @@ func isValidArgs() {
 		printUsage()
 		os.Exit(1)
 	}
+}
+
+//发送交易
+func (cli CLI) sendTransaction(from []string,to []string, amount []string)  {
+	if !isDBExists(){
+		fmt.Println("数据不存在")
+		os.Exit(1)
+	}
+	blockchain := BlockchainObject()
+	defer blockchain.DB.Close()
+
+	blockchain.MineNewBlock(from,to ,amount)
 }
