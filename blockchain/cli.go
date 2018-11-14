@@ -2,28 +2,41 @@ package blockchain
 
 import (
 	"flag"
-	"os"
-	"log"
 	"fmt"
+	"log"
+	"os"
 )
 
 type CLI struct {
 	BC *Blockchain
 }
 
+//打印命令行帮助
+func printUsage() {
+	fmt.Print(`
+Usage:
+	sendTransaction -from FROM -to TO -amount AMOUNT  --交易数据
+	printchain  --打印所有区块信息
+	createBlockchain -address ADDRESS  --创建创始区块
+`)
+}
+
 func (cli *CLI) RUN() {
 	isValidArgs()
 
-	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
+	sendTransactionCmd := flag.NewFlagSet("sendTransaction", flag.ExitOnError)
 	printCahinCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
-	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
+	createBlockchainCmd := flag.NewFlagSet("createBlockchain", flag.ExitOnError)
 
-	flagAddBlockData := addBlockCmd.String("data", "addBlockCmd", "添加交易数据")
+	flagFrom := sendTransactionCmd.String("from", "", "转账源地址")
+	flagTo := sendTransactionCmd.String("to", "", "转账目标地址")
+	flagAmount := sendTransactionCmd.String("amount", "", "添加交易数据")
+
 	flagCreateBlockchainWithAddress := createBlockchainCmd.String("address", "", "设置产生创始区块的地址")
 
 	switch os.Args[1] {
-	case "addblock":
-		err := addBlockCmd.Parse(os.Args[2:])
+	case "sendTransaction":
+		err := sendTransactionCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -32,7 +45,7 @@ func (cli *CLI) RUN() {
 		if err != nil {
 			log.Panic(err)
 		}
-	case "createblockchain":
+	case "createBlockchain":
 		err := createBlockchainCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
@@ -43,13 +56,14 @@ func (cli *CLI) RUN() {
 		os.Exit(1)
 	}
 
-	if addBlockCmd.Parsed() {
-		if *flagAddBlockData == "" {
+	if sendTransactionCmd.Parsed() {
+		if *flagFrom == "" || *flagTo == "" || *flagAmount == "" {
 			fmt.Println("交易数据不能为空")
 			printUsage()
 			os.Exit(1)
 		}
 		//fmt.Println(*flagAddBlockData)
+		fmt.Println(*flagFrom, *flagTo, *flagAmount)
 		cli.addBlock([]*Transaction{})
 	}
 
@@ -94,13 +108,4 @@ func isValidArgs() {
 		printUsage()
 		os.Exit(1)
 	}
-}
-
-func printUsage() {
-	fmt.Print(`
-Usage:
-	addblock -data DATA  --交易数据
-	printchain  --打印所有区块信息
-	createblockchain -address ADDRESS  --创建创始区块
-`)
 }
