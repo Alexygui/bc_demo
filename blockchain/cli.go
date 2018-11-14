@@ -19,7 +19,7 @@ func (cli *CLI) RUN() {
 	createBlockchainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 
 	flagAddBlockData := addBlockCmd.String("data", "addBlockCmd", "添加交易数据")
-	createBlockchainData := createBlockchainCmd.String("data", "creating genesis block", "产生创始区块")
+	flagCreateBlockchainWithAddress := createBlockchainCmd.String("address", "", "设置产生创始区块的地址")
 
 	switch os.Args[1] {
 	case "addblock":
@@ -59,12 +59,12 @@ func (cli *CLI) RUN() {
 	}
 
 	if createBlockchainCmd.Parsed() {
-		if *createBlockchainData == "" {
+		if *flagCreateBlockchainWithAddress == "" {
 			fmt.Println("创始区块不可为空")
 			printUsage()
 			os.Exit(1)
 		}
-		cli.createGenesisBlockOfBlockchain([]*Transaction{})
+		cli.createGenesisBlockOfBlockchain(*flagCreateBlockchainWithAddress)
 	}
 }
 
@@ -84,8 +84,8 @@ func (cli *CLI) printChain() {
 }
 
 //产生创始区块并持久化
-func (cli *CLI) createGenesisBlockOfBlockchain(txs []*Transaction) {
-	CreateGenesisBlockOfBlockchain(txs)
+func (cli *CLI) createGenesisBlockOfBlockchain(address string) {
+	CreateGenesisBlockOfBlockchain(address)
 }
 
 //命令行传入的参数少于2个则打印命令行帮助
@@ -101,6 +101,6 @@ func printUsage() {
 Usage:
 	addblock -data DATA  --交易数据
 	printchain  --打印所有区块信息
-	createblockchain -data DATA  --创建创始区块
+	createblockchain -address ADDRESS  --创建创始区块
 `)
 }
