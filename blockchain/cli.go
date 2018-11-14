@@ -24,6 +24,7 @@ Usage:
 func (cli *CLI) RUN() {
 	isValidArgs()
 
+	// sendTransaction -from '["Alice","Alex"]' -to '["Bob","Bag"]' -amount '["10","20"]'
 	sendTransactionCmd := flag.NewFlagSet("sendTransaction", flag.ExitOnError)
 	printCahinCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createBlockchainCmd := flag.NewFlagSet("createBlockchain", flag.ExitOnError)
@@ -64,7 +65,8 @@ func (cli *CLI) RUN() {
 		}
 		//fmt.Println(*flagAddBlockData)
 		fmt.Println(*flagFrom, *flagTo, *flagAmount)
-		cli.addBlock([]*Transaction{})
+		fmt.Println(JSONtoArray(*flagFrom),JSONtoArray(*flagTo),JSONtoArray(*flagAmount))
+		//cli.addBlock([]*Transaction{})
 	}
 
 	if printCahinCmd.Parsed() {

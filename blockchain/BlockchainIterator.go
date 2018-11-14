@@ -12,10 +12,6 @@ type Iterator struct {
 	DB          *bolt.DB
 }
 
-func (bc *Blockchain) Iterator() *Iterator {
-	return &Iterator{bc.Tip, bc.DB}
-}
-
 func (blockchainIterator *Iterator) HasNext() bool {
 	var hashInt big.Int
 	hashInt.SetBytes(blockchainIterator.CurrentHash)

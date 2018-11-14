@@ -166,3 +166,7 @@ func GetBlockchain() *Blockchain {
 
 	return &Blockchain{tip, db}
 }
+
+func (bc *Blockchain) Iterator() *Iterator {
+	return &Iterator{bc.Tip, bc.DB}
+}
