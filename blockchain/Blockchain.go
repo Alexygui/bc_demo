@@ -201,10 +201,7 @@ func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) 
 	err := bc.DB.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(blockTableName))
 		if bucket != nil {
-			hash := bucket.Get([]byte(bc.Tip))
-			oldBlockBytes := bucket.Get(hash)
-			fmt.Println(hash)
-			fmt.Println([]byte(hash))
+			oldBlockBytes := bucket.Get(bc.Tip)
 			oldBlock = DeserializeBlock(oldBlockBytes)
 		}
 		return nil
