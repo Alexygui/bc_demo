@@ -6,6 +6,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"log"
 	"os"
+	"strconv"
 )
 
 type Blockchain struct {
@@ -211,6 +212,12 @@ func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) 
 	}
 
 	var txs []*Transaction
+	for i := range from {
+		amountI, _ := strconv.Atoi(amount[i])
+		tx := NewSimpleTransaction(from[i], to[i], amountI)
+		txs = append(txs, tx)
+	}
+
 	newBlock := NewBlock(txs, oldBlock.Height+1, oldBlock.Hash)
 	//将新区块存储到数据库并更新bc中的tip值
 	err = bc.DB.Update(func(tx *bolt.Tx) error {
