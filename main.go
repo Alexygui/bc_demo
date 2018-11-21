@@ -1,6 +1,8 @@
 package main
 
-import "github.com/Alexygui/bc_demo/blockchain"
+import (
+	"github.com/Alexygui/bc_demo/blockchain"
+)
 
 func main() {
 	cli := blockchain.CLI{}

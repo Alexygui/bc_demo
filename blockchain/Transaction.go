@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
-	"fmt"
 	"log"
 )
 
@@ -42,8 +41,6 @@ func (tx *Transaction) HashTransaction() {
 
 func NewSimpleTransaction(from string, to string, amount int) *Transaction {
 	//返回from地址对应的所有的未花费的交易输出
-	unspentTXs := UnspentTransactionsWithAddress(from)
-	fmt.Println(unspentTXs)
 
 	return nil
 	//var txInputs []*TxInput
@@ -60,4 +57,9 @@ func NewSimpleTransaction(from string, to string, amount int) *Transaction {
 	//tx.HashTransaction()
 	//
 	//return tx
+}
+
+//判断交易是否是coinbase交易
+func (tx *Transaction) IsCoinbaseTransaction() bool {
+	return len(tx.TxIn[0].TxHash) == 0 && tx.TxIn[0].Sequence == -1
 }

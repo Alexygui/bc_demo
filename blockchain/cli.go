@@ -147,6 +147,14 @@ func (cli CLI) sendTransaction(from []string, to []string, amount []string) {
 //查询地址余额
 func (cli *CLI) getBalance(address string) {
 	fmt.Println("地址：", address)
-	unspentTXs := UnspentTransactionsWithAddress(address)
-	fmt.Println(unspentTXs)
+	//获取blockchain对象
+	bc := BlockchainObject()
+	defer bc.DB.Close()
+
+	utxos := bc.GetUTXOs(address)
+
+	fmt.Println("============================")
+	for _, utxo := range utxos {
+		fmt.Println(utxo)
+	}
 }

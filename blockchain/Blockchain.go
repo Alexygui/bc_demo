@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"encoding/hex"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/davecgh/go-spew/spew"
@@ -234,8 +235,52 @@ func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) 
 	}
 }
 
-//如果一个地址对应的UTXO未花费，那么这个Transaction就应该添加到数组中返回
-func UnspentTransactionsWithAddress(address string) []*Transaction {
+//遍历地址中的Txoutput，查找出未使用的TXOutput，添加到数组中返回
+func (bc *Blockchain) GetUTXOs(address string) []*TxOutput {
+	var UTXOs []*TxOutput
+	//已经使用的交易输出
+	spentTXoutputs := make(map[string][]int)
 
-	return nil
+	iterator := bc.Iterator()
+	for ; iterator.HasNext(); {
+		block := iterator.Next()
+
+		//遍历当前区块中的所有交易
+		for _, tx := range block.Txs {
+			//对于非coinbase交易，获取已经使用的TXOutput，
+			//根据交易哈希，和在每个交易哈希中的序列放到map中
+			if tx.IsCoinbaseTransaction() == false {
+				for _, in := range tx.TxIn {
+					if in.ScriptSig == address {
+						key := hex.EncodeToString(in.TxHash)
+						spentTXoutputs[key] = append(spentTXoutputs[key], in.Sequence)
+					}
+				}
+			}
+
+			//遍历当前交易中的TXOutput，将不在已使用交易输出列表中的TXOutput放到UTXO数组中
+			for index, txOut := range tx.TxOut {
+				if txOut.UnlockScriptPubKeyWithAddress(address) {
+					if len(spentTXoutputs) != 0 {
+						for txHash, indexArr := range spentTXoutputs {
+							for _, i := range indexArr {
+								if txHash == hex.EncodeToString(tx.TxHash) && i == index {
+									//1.如果当前区块中的某个交易哈希值和已经使用过的交易哈希值相等
+									//2.如果已经使用过的TXOutput的序列值和当前交易中的交易序列值相等
+									//可以说明这个UTXO是已经被使用过的
+									continue
+								} else {
+									UTXOs = append(UTXOs, txOut)
+								}
+							}
+						}
+					} else {
+						UTXOs = append(UTXOs, txOut)
+					}
+				}
+			}
+		}
+	}
+
+	return UTXOs
 }
