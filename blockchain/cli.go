@@ -18,6 +18,7 @@ Usage:
 	sendTransaction -from FROM -to TO -amount AMOUNT  --交易数据
 	printchain  --打印所有区块信息
 	createBlockchain -address ADDRESS  --创建创始区块
+	getbalance -address ADDRESS  --获取账户余额
 `)
 }
 
@@ -28,12 +29,14 @@ func (cli *CLI) RUN() {
 	sendTransactionCmd := flag.NewFlagSet("sendTransaction", flag.ExitOnError)
 	printCahinCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createBlockchainCmd := flag.NewFlagSet("createBlockchain", flag.ExitOnError)
+	getbalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
 
 	flagFrom := sendTransactionCmd.String("from", "", "转账源地址")
 	flagTo := sendTransactionCmd.String("to", "", "转账目标地址")
 	flagAmount := sendTransactionCmd.String("amount", "", "添加交易数据")
 
 	flagCreateBlockchainWithAddress := createBlockchainCmd.String("address", "", "设置产生创始区块的地址")
+	flagGetbalanceWithAddress := getbalanceCmd.String("address", "", "获取某个地址的余额")
 
 	switch os.Args[1] {
 	case "sendTransaction":
@@ -48,6 +51,11 @@ func (cli *CLI) RUN() {
 		}
 	case "createBlockchain":
 		err := createBlockchainCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
+	case "getbalance":
+		err := getbalanceCmd.Parse(os.Args[2:])
 		if err != nil {
 			log.Panic(err)
 		}
@@ -69,7 +77,7 @@ func (cli *CLI) RUN() {
 		fromArr := JSONtoArray(*flagFrom)
 		toArr := JSONtoArray(*flagTo)
 		amountArr := JSONtoArray(*flagAmount)
-		cli.sendTransaction(fromArr,toArr,amountArr)
+		cli.sendTransaction(fromArr, toArr, amountArr)
 	}
 
 	if printCahinCmd.Parsed() {
@@ -84,6 +92,15 @@ func (cli *CLI) RUN() {
 			os.Exit(1)
 		}
 		cli.createGenesisBlockOfBlockchain(*flagCreateBlockchainWithAddress)
+	}
+
+	if getbalanceCmd.Parsed() {
+		if *flagGetbalanceWithAddress == "" {
+			fmt.Println("地址不可为空")
+			printUsage()
+			os.Exit(1)
+		}
+		cli.getBalance(*flagGetbalanceWithAddress)
 	}
 }
 
@@ -116,13 +133,20 @@ func isValidArgs() {
 }
 
 //发送交易
-func (cli CLI) sendTransaction(from []string,to []string, amount []string)  {
-	if !isDBExists(){
+func (cli CLI) sendTransaction(from []string, to []string, amount []string) {
+	if !isDBExists() {
 		fmt.Println("数据不存在")
 		os.Exit(1)
 	}
 	blockchain := BlockchainObject()
 	defer blockchain.DB.Close()
 
-	blockchain.MineNewBlock(from,to ,amount)
+	blockchain.MineNewBlock(from, to, amount)
+}
+
+//查询地址余额
+func (cli *CLI) getBalance(address string) {
+	fmt.Println("地址：", address)
+	unspentTXs := UnspentTransactionsWithAddress(address)
+	fmt.Println(unspentTXs)
 }

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"fmt"
 	"log"
-	"encoding/hex"
 )
 
 //UTXO交易模型
@@ -41,18 +41,23 @@ func (tx *Transaction) HashTransaction() {
 }
 
 func NewSimpleTransaction(from string, to string, amount int) *Transaction {
-	var txInputs []*TxInput
+	//返回from地址对应的所有的未花费的交易输出
+	unspentTXs := UnspentTransactionsWithAddress(from)
+	fmt.Println(unspentTXs)
 
-	inputBytes, _ := hex.DecodeString("bfe4024e30d2b2e6d75b2cc3206ae848eb2fd38e733949d9df0eb66e45809ebc")
-	txInput := &TxInput{inputBytes, 0, from}
-	txInputs = append(txInputs, txInput)
-
-	var txOutputs []*TxOutput
-	txOutput := &TxOutput{amount, to}
-	txOutputs = append(txOutputs, txOutput)
-
-	tx := &Transaction{[]byte{}, txInputs, txOutputs}
-	tx.HashTransaction()
-
-	return tx
+	return nil
+	//var txInputs []*TxInput
+	//
+	//inputBytes, _ := hex.DecodeString("bfe4024e30d2b2e6d75b2cc3206ae848eb2fd38e733949d9df0eb66e45809ebc")
+	//txInput := &TxInput{inputBytes, 0, from}
+	//txInputs = append(txInputs, txInput)
+	//
+	//var txOutputs []*TxOutput
+	//txOutput := &TxOutput{amount, to}
+	//txOutputs = append(txOutputs, txOutput)
+	//
+	//tx := &Transaction{[]byte{}, txInputs, txOutputs}
+	//tx.HashTransaction()
+	//
+	//return tx
 }

@@ -233,3 +233,9 @@ func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) 
 		log.Panic(nil)
 	}
 }
+
+//如果一个地址对应的UTXO未花费，那么这个Transaction就应该添加到数组中返回
+func UnspentTransactionsWithAddress(address string) []*Transaction {
+
+	return nil
+}
