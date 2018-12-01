@@ -151,10 +151,7 @@ func (cli *CLI) getBalance(address string) {
 	bc := BlockchainObject()
 	defer bc.DB.Close()
 
-	utxos := bc.GetUTXOs(address)
+	amount := bc.GetBalance(address)
 
-	fmt.Println("============================")
-	for _, utxo := range utxos {
-		fmt.Println(utxo)
-	}
+	fmt.Printf("%s一共有%d个token\n", address, amount)
 }

@@ -235,9 +235,19 @@ func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) 
 	}
 }
 
+func (bc *Blockchain) GetBalance(address string) int64 {
+	utxos := bc.GetUTXOs(address)
+
+	var amount int64
+	for _, v := range utxos {
+		amount += int64(v.Output.Value)
+	}
+	return amount
+}
+
 //遍历地址中的Txoutput，查找出未使用的TXOutput，添加到数组中返回
-func (bc *Blockchain) GetUTXOs(address string) []*TxOutput {
-	var UTXOs []*TxOutput
+func (bc *Blockchain) GetUTXOs(address string) []*UTXO {
+	var UTXOs []*UTXO
 	//已经使用的交易输出
 	spentTXoutputs := make(map[string][]int)
 
@@ -270,12 +280,14 @@ func (bc *Blockchain) GetUTXOs(address string) []*TxOutput {
 									//可以说明这个UTXO是已经被使用过的
 									continue
 								} else {
-									UTXOs = append(UTXOs, txOut)
+									utxo := &UTXO{tx.TxHash, index, txOut}
+									UTXOs = append(UTXOs, utxo)
 								}
 							}
 						}
 					} else {
-						UTXOs = append(UTXOs, txOut)
+						utxo := &UTXO{tx.TxHash, index, txOut}
+						UTXOs = append(UTXOs, utxo)
 					}
 				}
 			}
