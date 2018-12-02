@@ -215,7 +215,7 @@ func (bc *Blockchain) MineNewBlock(from []string, to []string, amount []string) 
 	var txs []*Transaction
 	for i := range from {
 		amountI, _ := strconv.Atoi(amount[i])
-		tx := NewSimpleTransaction(from[i], to[i], amountI)
+		tx := NewSimpleTransaction(from[i], to[i], amountI, bc)
 		txs = append(txs, tx)
 	}
 
@@ -295,4 +295,28 @@ func (bc *Blockchain) GetUTXOs(address string) []*UTXO {
 	}
 
 	return UTXOs
+}
+
+func (bc *Blockchain) FindEnoughUTXOs(from string, amout int) (int64, map[string][]int) {
+	utxos := bc.GetUTXOs(from)
+	enoughUTXOmap := make(map[string][]int)
+
+	var value int64
+	for _, utxo := range utxos {
+		value += utxo.Output.Value
+
+		hash := hex.EncodeToString(utxo.TxHash)
+		enoughUTXOmap[hash] = append(enoughUTXOmap[hash], utxo.Index)
+
+		if value >= int64(amout) {
+			break
+		}
+	}
+
+	if value < int64(amout) {
+		fmt.Printf("%s账户余额不足\n", from)
+		os.Exit(1)
+	}
+
+	return value, enoughUTXOmap
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/gob"
 	"log"
+	"encoding/hex"
 )
 
 //UTXO交易模型
@@ -39,24 +40,34 @@ func (tx *Transaction) HashTransaction() {
 	tx.TxHash = sum256Bytes[:]
 }
 
-func NewSimpleTransaction(from string, to string, amount int) *Transaction {
+func NewSimpleTransaction(from string, to string, amount int, bc *Blockchain) *Transaction {
 	//返回from地址对应的所有的未花费的交易输出
+	value, utxosMap := bc.FindEnoughUTXOs(from, amount)
 
-	return nil
-	//var txInputs []*TxInput
-	//
-	//inputBytes, _ := hex.DecodeString("bfe4024e30d2b2e6d75b2cc3206ae848eb2fd38e733949d9df0eb66e45809ebc")
-	//txInput := &TxInput{inputBytes, 0, from}
-	//txInputs = append(txInputs, txInput)
-	//
-	//var txOutputs []*TxOutput
-	//txOutput := &TxOutput{amount, to}
-	//txOutputs = append(txOutputs, txOutput)
-	//
-	//tx := &Transaction{[]byte{}, txInputs, txOutputs}
-	//tx.HashTransaction()
-	//
-	//return tx
+	var txInputs []*TxInput
+	var txOutputs []*TxOutput
+
+	for txHash, indexArray := range utxosMap {
+		hashBytes, _ := hex.DecodeString(txHash)
+		for _, txIndex := range indexArray {
+			txInput := &TxInput{hashBytes, txIndex, from}
+			txInputs = append(txInputs, txInput)
+		}
+	}
+
+	txOutput := &TxOutput{int64(amount), to}
+	txOutputs = append(txOutputs, txOutput)
+
+	change := value - int64(amount)
+	if change > 0 {
+		txOutput = &TxOutput{value - int64(amount), from}
+		txOutputs = append(txOutputs, txOutput)
+	}
+
+	tx := &Transaction{[]byte{}, txInputs, txOutputs}
+	tx.HashTransaction()
+
+	return tx
 }
 
 //判断交易是否是coinbase交易
