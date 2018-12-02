@@ -20,7 +20,7 @@ const dbName = "blockchain.db"
 const blockTableName = "blocks"
 
 func CreateGenesisBlockOfBlockchain(address string) {
-	if isDBExists() {
+	if IsDBExists() {
 		fmt.Println("创始区块已经产生")
 		os.Exit(1)
 	}
@@ -63,7 +63,7 @@ func CreateGenesisBlockOfBlockchain(address string) {
 
 }
 
-func isDBExists() bool {
+func IsDBExists() bool {
 	if _, e := os.Stat(dbName); e != nil {
 		return false
 	}
@@ -142,7 +142,7 @@ func CreateGenesisBlock(txs []*Transaction) *Block {
 
 //获取保存区块数据的数据库
 func GetBlockchain() *Blockchain {
-	if !isDBExists() {
+	if !IsDBExists() {
 		fmt.Println("数据不存在")
 		os.Exit(1)
 	}

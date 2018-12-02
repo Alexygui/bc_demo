@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/Alexygui/bc_demo/blockchain"
+	"github.com/Alexygui/bc_demo/cli"
 )
 
 func main() {
-	cli := blockchain.CLI{}
-	cli.RUN()
+	terminalCli := cli.CLI{}
+	terminalCli.RUN()
 }
 
 //func seriable_deseriable(){

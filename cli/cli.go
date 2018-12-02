@@ -1,14 +1,15 @@
-package blockchain
+package cli
 
 import (
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"github.com/Alexygui/bc_demo/blockchain"
 )
 
 type CLI struct {
-	BC *Blockchain
+	BC *blockchain.Blockchain
 }
 
 //打印命令行帮助
@@ -74,9 +75,9 @@ func (cli *CLI) RUN() {
 		//fmt.Println(*flagFrom, *flagTo, *flagAmount)
 		//fmt.Println(JSONtoArray(*flagFrom),JSONtoArray(*flagTo),JSONtoArray(*flagAmount))
 
-		fromArr := JSONtoArray(*flagFrom)
-		toArr := JSONtoArray(*flagTo)
-		amountArr := JSONtoArray(*flagAmount)
+		fromArr := blockchain.JSONtoArray(*flagFrom)
+		toArr := blockchain.JSONtoArray(*flagTo)
+		amountArr := blockchain.JSONtoArray(*flagAmount)
 		cli.sendTransaction(fromArr, toArr, amountArr)
 	}
 
@@ -102,56 +103,4 @@ func (cli *CLI) RUN() {
 		}
 		cli.getBalance(*flagGetbalanceWithAddress)
 	}
-}
-
-func (cli *CLI) addBlock(txs []*Transaction) {
-	bc := GetBlockchain()
-	defer bc.DB.Close()
-
-	bc.AddBlockToBlockchain(txs)
-}
-
-//打印区块链中的所有区块
-func (cli *CLI) printChain() {
-	bc := GetBlockchain()
-	defer bc.DB.Close()
-
-	bc.PrintBlockchain()
-}
-
-//产生创始区块并持久化
-func (cli *CLI) createGenesisBlockOfBlockchain(address string) {
-	CreateGenesisBlockOfBlockchain(address)
-}
-
-//命令行传入的参数少于2个则打印命令行帮助
-func isValidArgs() {
-	if len(os.Args) < 2 {
-		printUsage()
-		os.Exit(1)
-	}
-}
-
-//发送交易
-func (cli CLI) sendTransaction(from []string, to []string, amount []string) {
-	if !isDBExists() {
-		fmt.Println("数据不存在")
-		os.Exit(1)
-	}
-	blockchain := BlockchainObject()
-	defer blockchain.DB.Close()
-
-	blockchain.MineNewBlock(from, to, amount)
-}
-
-//查询地址余额
-func (cli *CLI) getBalance(address string) {
-	fmt.Println("地址：", address)
-	//获取blockchain对象
-	bc := BlockchainObject()
-	defer bc.DB.Close()
-
-	amount := bc.GetBalance(address)
-
-	fmt.Printf("%s一共有%d个token\n", address, amount)
 }
