@@ -268,23 +268,26 @@ func (bc *Blockchain) GetUTXOs(address string) []*UTXO {
 				}
 			}
 
+		VerifyTXOutput:
 			//遍历当前交易中的TXOutput，将不在已使用交易输出列表中的TXOutput放到UTXO数组中
 			for index, txOut := range tx.TxOut {
 				if txOut.UnlockScriptPubKeyWithAddress(address) {
 					if len(spentTXoutputs) != 0 {
+						//遍历所有的已经使用过的交易输出，只要有一个和当前交易输出中相同的，则不将当前交易输出作为UTXO
 						for txHash, indexArr := range spentTXoutputs {
+							//遍历已经使用过的一个交易哈希中的所有的交易序列
 							for _, i := range indexArr {
 								if txHash == hex.EncodeToString(tx.TxHash) && i == index {
 									//1.如果当前区块中的某个交易哈希值和已经使用过的交易哈希值相等
 									//2.如果已经使用过的TXOutput的序列值和当前交易中的交易序列值相等
 									//可以说明这个UTXO是已经被使用过的
-									continue
-								} else {
-									utxo := &UTXO{tx.TxHash, index, txOut}
-									UTXOs = append(UTXOs, utxo)
+									continue VerifyTXOutput
 								}
 							}
 						}
+						//以上交易输出中，有和已经使用过的相同的，跳出到交易输出遍历循环，没有则将该交易输出添加到UTXO
+						utxo := &UTXO{tx.TxHash, index, txOut}
+						UTXOs = append(UTXOs, utxo)
 					} else {
 						utxo := &UTXO{tx.TxHash, index, txOut}
 						UTXOs = append(UTXOs, utxo)
